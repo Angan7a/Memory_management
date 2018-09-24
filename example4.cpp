@@ -1,6 +1,7 @@
-#include <iostream>
+//#include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
 
 using namespace std;
 
@@ -9,7 +10,7 @@ struct Resource
     Resource(char* byte) : byte_(byte) {}
     char* byte() const { return byte_; }
     virtual string name() const = 0;
-    ~Resource() { delete byte_; }
+    virtual ~Resource() { delete byte_; }
 
 protected:
     char* byte_ = nullptr;
@@ -29,25 +30,29 @@ struct ResourceB : Resource
 
 struct ResourceFactory
 { 
-    Resource* makeResourceA(char* byte) { return new ResourceA{byte}; }
-    Resource* makeResourceB(char* byte) { return new ResourceB{byte}; }
+    auto makeResourceA(char* byte) { return make_shared<ResourceA>(byte); }
+    auto makeResourceB(char* byte) { return make_shared<ResourceB>(byte); }
 };
 
 struct ResourceCollection
 {
-    void add(Resource* r) { resources.push_back(r); }
+    void add(shared_ptr<Resource> r) { resources.push_back(r); }
     void clear() { resources.clear(); }
-    Resource* operator[](int index) { return resources[index]; }
+    shared_ptr<Resource> operator[](int index) { return resources[index]; }
     void printAll()
     {
         for (const auto & res : resources)
         {
-            cout << res->name() << endl;
+ //           cout << res->name() << endl;
         }
+    }
+    void erase(int index)
+    {
+        resources.erase(resources.begin() + index);
     }
 
 private:
-    vector<Resource*> resources;
+    vector<shared_ptr<Resource>> resources;
 };
 
 int main()
@@ -58,9 +63,10 @@ int main()
     collection.add(rf.makeResourceB(new char{0x02}));
     collection.printAll();
 
+    collection.erase(1);
     auto firstByte = collection[0]->byte();
     collection.clear();
-    cout << *firstByte << endl;
+ //   cout << *firstByte << endl;
 
     return 0;
 }

@@ -9,7 +9,7 @@ vector<int*> allocate_ints()
     for(int i = 0; i < 10; i++)
     {
         numbers.push_back(new int(i));
-        cout << "Added " << i << endl;
+//        cout << "Added " << i << endl;
     }
     return numbers;
 }
@@ -25,7 +25,8 @@ void deallocate_ints(vector<int*> numbers)
 int main()
 {
     vector<int*> num = allocate_ints();
-    cout << "Hello World!" << endl;
+ //   cout << "Hello World!" << endl;
+    deallocate_ints(num);
     return 0;
 }
 
