@@ -1,4 +1,4 @@
-#include <iostream>
+//#include <iostream>
 #include <memory>
 
 using namespace std;
@@ -18,14 +18,16 @@ class Node
 {
 public:
     Node(const T v) :
-        next(nullptr),
-        prev(nullptr),
         value(v)
-    {}
-    shared_ptr<Node> next;
-    shared_ptr<Node> prev;
+    {
+        next.lock() = nullptr;
+        prev.lock() = nullptr;
+    }
+    weak_ptr<Node> next;
+    weak_ptr<Node> prev;
     T value;
 };
+
 template<class T>
 class List
 {
@@ -44,7 +46,7 @@ private:
 template<class T>
 List<T>::List() :
     first(nullptr),
-    last(first)
+    last(nullptr)
 {}
 
 template<class T>
@@ -60,17 +62,17 @@ void List<T>::add(shared_ptr<Node<T>> node)
         try
         {
             get(node->value);
-            cout << "I can't add this nod. It existes in list\n";
+ //           cout << "I can't add this nod. It existes in list\n";
         }
         catch (runtime_error & re)
         {
             shared_ptr<Node<T>> current = first;
-            while(current->next)
+            while(current->next.lock())
             {
-                current = current->next;
+                current = current->next.lock();
             }
-            current->next = node;
-            node->prev = current;
+            current->next.lock() = node;
+            node->prev.lock() = current;
             last = node;
         }
     }
@@ -90,13 +92,13 @@ shared_ptr<Node<T>> List<T>::get(const T value)
         {
             if(current->value == value)
             {
-                cout << "Found value " << current->value << endl;
+ //               cout << "Found value " << current->value << endl;
                 return current;
             }
             else
             {
-                cout << "Going through " << current->value << endl;
-                current = current->next;
+   //             cout << "Going through " << current->value << endl;
+                current = current->next.lock();
             }
         } while(current);
         
@@ -115,8 +117,8 @@ void List<T>::addFirst(shared_ptr<Node<T>> node)
     }
     else
     {
-        first->prev = node;
-        node->next = first;
+        first->prev.lock() = node;
+        node->next.lock() = first;
         first = node;
     }
 }
@@ -129,7 +131,7 @@ shared_ptr<Node<T>> List<T>::getBackward(const int value)
     while (a != value)
     {
         a++;
-        tmp = tmp->prev;
+        tmp = tmp->prev.lock();
         if (tmp == NULL) throw NotFoundError();
     }
     return tmp;
@@ -147,16 +149,16 @@ int main()
        // lista.add(node4);
        // lista.add(node4);
         //lista.add(make_shared<Node>(2));
-        //lista.add(node7);
+        lista.add(node7);
         //lista.add(make_shared<Node>(9));
-        lista.addFirst(node7);
-        lista.add(node4);
+  //      lista.addFirst(node7);
+//        lista.add(node4);
         auto node = lista.get("Zuzanna");
-        cout << node->value << endl;
+//        cout << node->value << endl;
     }
     catch (runtime_error & re)
     {
-        cerr << re.what() << endl;
+ //       cerr << re.what() << endl;
     }
 
     return 0;
